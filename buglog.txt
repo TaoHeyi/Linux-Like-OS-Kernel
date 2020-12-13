@@ -1,0 +1,176 @@
+//////////////////////
+//Checkpoint 1 bugs://
+//////////////////////
+----------------------------------------------------------IDT----------------------------------------------------------
+
+1. When we defined the helper function that prints current interrupt to screen, we did not include \ when we switched
+lines and caused make errors. We fixed it by add \ at the end of line for the defined block.
+
+2. The IDT handler ASM file we wrote at first included function definitions in C style, which also casued compilation
+errors and we had to define ASM in idt_handler.h as well as remove unnecessary includes.
+
+3. We did not use cli when we raised an exception, which allowed keyboard input even though an exception interrupt is
+being currently raised. To fix this, we added cli in the exception handler function be stop receiving other interrupts
+and freeze our kernel.
+
+----------------------------------------------------------RTC----------------------------------------------------------
+
+1. The rtc interrupt generates for a few times and an undefined interrupt occurs ---> master_mask and slave_mask variable
+in i8259.c is not initialized to 0xFF.
+
+--------------------------------------------------------Keyboard--------------------------------------------------------
+
+1. Character don't echo to screen at all ---> master_mask and slave_mask variable in i8259.c is not initialized to 0xFF.
+
+2. Character only echo to screen once ---> handler returns without sending eoi for special keys or null keys
+
+---------------------------------------------------------Paging---------------------------------------------------------
+
+1. At first, I declared the page directory pointer and page table pointer in the paging.c file as extern, which caused my
+paging.c file to incorrectly access those two pointers. After I removed the extern keyword and moved the position of those 
+two pointers to paging.h, they worked as intented.
+
+2. When I tried to initialize paging, for all the entries stored at the page table, I set up the last bit of the entry to 1.
+However, as stated in the documentation, we should mark everything in the first 4MB, that isn't the page for video memory, 
+should be marked not present, which means that I should set up the least significant bit of each entry of the table to 0.
+After changing the last bit to 0, my table works correctly.
+
+
+//////////////////////
+//Checkpoint 2 bugs://
+//////////////////////
+-----------------------------------------------------Terminal Driver----------------------------------------------------
+
+1. Page-fault after typing one character when I only echo my key buffer to screen ---> using array notation to change 
+content of a pointer seems to be not working.
+
+2. When typing enter, both the keyboard echo and the Terminal write will print the string so that we will have two lines 
+of strings that we typed ---> backspace the key buffer after we move it to the read buffer and also pay attention to the 
+clear operation so that we are not backspacing too much.
+
+3. When buffer is filled and when we enter, a werid triangle character appears ---> printf is null character terminated,
+so we need to add '\0' at end of read buffer.
+
+4. term_write can write bytes larger than the length specified ---> change the write buffer accordingly
+
+-------------------------------------------------------File System------------------------------------------------------
+
+1. While writing the file system, it is really to get confused with whether a variable is a pointer or just delievered as
+an physical address. When we used the wrong type for the variable, we will get page fault error and we need to utilize gdb
+to find where that happens and backtrace to the place we used the variable in the wrong way.
+
+2. We got page fault when we tried to find the correct data block. We utilized the wrong variable to feed into our array
+to find the address for that data block. As a result, it would give us an value goes beyond the length fo the array and 
+give us the page fault error.
+
+3. The strlen function caused us some trouble in the first place as the null character in the end of our read input would
+fail to meet the condition check. We removed the strlen check and simply used strncmp check for the read_dentry_by_name
+helper function.
+
+-----------------------------------------------------------RTC----------------------------------------------------------
+
+1. We did not cast the pointer of buf in rtc_write in the first place and caused compilation error. We fixed it by simply
+adding an integer pointer typecast.
+
+2. We forgot about the lowerbound constraint on the frequency, e.g. when frequency is attempted to be set to 1. We added
+the condition check in rtc_write to prevent the attempt to set frequency to 1Hz.
+
+
+//////////////////////
+//Checkpoint 3 bugs://
+//////////////////////
+--------------------------------------------------------Execute--------------------------------------------------------
+
+1. Entrypoint was not correct ---> The ordering of bytes should be 27,26,25,24, but we used 24,25,26,27, fixed by left
+shifting in the reversed order.
+
+2. Parent process number assigned wrongly when it's executing the first program ---> we were checking the frist program 
+flag after we assign the new process number to our newly created pcb.
+
+3. Program "ls" stucked in the infinite loop while doing directory read ---> in shell, the term_read gives some extra '\0' 
+at the end of the buf which causes shell program unable to delete the '\n' character in the buffer. This causes the directory 
+read continous read without stopping.
+
+4. Our return value from execute was modified during the operation ---> we fixed it by not using the general wrapper for 
+system call since it pushes eax to to stack, one single assembly linkage with system call jump table will be enough, 
+and also use iret at end of assembly linkage instead of ret.
+
+---------------------------------------------------------Halt----------------------------------------------------------
+
+1. Parent pcb's parent process number is altered after an inline assembly in the middle of the halt system call ---> we 
+move that inline assembly to the end of the halt and combine it with the assembly inline that jumps to the execute return.
+
+2. We did not squash erroneous user programs correclty ---> we fixed it by calling halt(0) with interrupt flag in the IDT
+handler and halt(1) in the keyboard switch statement of ctrl+c.
+
+---------------------------------------------------------Other---------------------------------------------------------
+
+1. Open empty string failed. We did not check for an empty string case in the read_dentry_by_name function and our
+kernel attempted to open("") even though it should not ---> We added the condition check to fix this issue.
+
+
+//////////////////////
+//Checkpoint 4 bugs://
+//////////////////////
+--------------------------------------------------------Getargs--------------------------------------------------------
+
+1. The cat can open arguments with trailing spaces ---> We were parsing multiple arguments and removing all the spaces, 
+but the document suggested that we should only have one argument. We downgraded 2D array into 1D argument buffer and 
+kept the trailing spaces so that it results in filenotfound when there are trailing spaces.
+
+2. Verylargetxt could not be opened or read ---> File system issues. We did not truncate the filename in dir into 32
+characters and the strncmp never returned 0, causing the large txt to not open.
+
+---------------------------------------------------------Vidmap--------------------------------------------------------
+1. When trying to link the virtual memory address to the physical memory address, cannot make the syserr work correctly
+and print pass ---> We link the wrong place of the virtual memory to the physical memory of the video memory, which causes
+error.
+
+---------------------------------------------------------Other---------------------------------------------------------
+
+1. When printing file with cat, it prints infinite times ---> we didn't update the file position as we read through a file
+
+2. The pingpong and fish program appears to be running faster than the demo ---> We did not virtualize the RTC and the 
+program is running on the actual device frequency.
+
+
+//////////////////////
+//Checkpoint 5 bugs://
+//////////////////////
+--------------------------------------------------------Multiple Terminal----------------------------------------------
+
+1. Three terminal was not booted up in the beginning, we have to use keyboard interrupt to boot the rest two terminal ---> 
+use pit interrupt to help booting three terminal in the beginning.
+
+2. Page fault when writting to terminal's video memory ---> Terminal video memory was mapped to the same page table that vidmap 
+occupies, we then change it to virtual address starting from 0xB9000 and let page table has user level bit set to 0.
+
+3. Cannot switch to another terminal caused by page-fault ---> after enabling Scheduling, we don't need process switch 
+inside terminal switch function anymore.
+
+4. Various process and terminal information updating to the wrong terminal or process ---> after enabling scheduling 
+we need to make changes to currently running terminal instead of currently displaying terminal.
+
+----------------------------------------------------------Scheduling---------------------------------------------------
+
+1. When printing the cursors for different terminals while switching, the cursor locations after swtiching will be affected
+by the the program being executed in the other terminal ---> we didn't consider the situation where current executing terminal
+is different from current terminal shown. After dealing two situations spearately by using another function we defined similar
+to printf function in the lib.c file.
+
+2. Used the wrong memory location to stored the video memory correctly ---> we cannot read and store the video memory for
+different terminals correctly. After changing it, we successfully read and change the video memory for different terminals.
+
+3. While typing words or other process is printing in the background, it will be echoed to the wrong terminal ---> 
+we did not update the video memory that we are writting to after process switch.
+
+4. Cannot switch to another terminal caused by page-fault ---> we didn't save esp and ebp before we launch a new terminal in 
+pit interrupt handler
+
+-----------------------------------------------------------Other-------------------------------------------------------
+ 
+1. RTC was not set up correctly for each process ---> We had to store the frequency of each individual running process in
+the three terminals and use the corresponding counter.
+
+2. The original set up for ctrl-c resulted in various errors ---> disabled ctrl-c functionality until signaling is 
+implemented (maybe?)

@@ -1,0 +1,41 @@
+boot.o: boot.S multiboot.h x86_desc.h types.h
+idt_handler.o: idt_handler.S idt_handler.h x86_desc.h types.h
+x86_desc.o: x86_desc.S x86_desc.h types.h
+file_system.o: file_system.c file_system.h lib.h types.h terminal.h \
+  keyboard.h i8259.h system_call.h x86_desc.h paging.h rtc.h idt.h \
+  idt_handler.h scheduling.h
+i8259.o: i8259.c i8259.h types.h lib.h terminal.h keyboard.h \
+  system_call.h x86_desc.h paging.h file_system.h rtc.h idt.h \
+  idt_handler.h scheduling.h
+idt.o: idt.c idt.h i8259.h types.h x86_desc.h lib.h terminal.h keyboard.h \
+  system_call.h paging.h file_system.h rtc.h scheduling.h idt_handler.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h terminal.h \
+  keyboard.h i8259.h system_call.h paging.h file_system.h rtc.h idt.h \
+  idt_handler.h scheduling.h mouse.h debug.h tests.h
+keyboard.o: keyboard.c keyboard.h types.h lib.h terminal.h file_system.h \
+  paging.h system_call.h x86_desc.h rtc.h i8259.h idt.h idt_handler.h \
+  scheduling.h
+lib.o: lib.c lib.h types.h terminal.h keyboard.h i8259.h system_call.h \
+  x86_desc.h paging.h file_system.h rtc.h idt.h idt_handler.h \
+  scheduling.h
+mouse.o: mouse.c mouse.h types.h lib.h terminal.h keyboard.h i8259.h \
+  system_call.h x86_desc.h paging.h file_system.h rtc.h idt.h \
+  idt_handler.h scheduling.h
+paging.o: paging.c paging.h types.h lib.h terminal.h keyboard.h i8259.h \
+  system_call.h x86_desc.h file_system.h rtc.h idt.h idt_handler.h \
+  scheduling.h
+rtc.o: rtc.c rtc.h types.h i8259.h lib.h terminal.h keyboard.h \
+  system_call.h x86_desc.h paging.h file_system.h idt.h idt_handler.h \
+  scheduling.h
+scheduling.o: scheduling.c scheduling.h paging.h types.h lib.h terminal.h \
+  keyboard.h i8259.h system_call.h x86_desc.h file_system.h rtc.h idt.h \
+  idt_handler.h
+system_call.o: system_call.c system_call.h types.h x86_desc.h lib.h \
+  terminal.h keyboard.h i8259.h file_system.h paging.h scheduling.h rtc.h \
+  idt.h idt_handler.h
+terminal.o: terminal.c terminal.h types.h lib.h keyboard.h i8259.h \
+  system_call.h x86_desc.h paging.h file_system.h rtc.h idt.h \
+  idt_handler.h scheduling.h
+tests.o: tests.c tests.h x86_desc.h types.h lib.h terminal.h keyboard.h \
+  i8259.h system_call.h paging.h file_system.h rtc.h idt.h idt_handler.h \
+  scheduling.h
