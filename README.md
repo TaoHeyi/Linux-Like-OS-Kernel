@@ -6,18 +6,21 @@ ECE391 MP3 - Package contents
 ================================
 
 createfs
+
     This program takes a flat source directory (i.e. no subdirectories
     in the source directory) and creates a filesystem image in the
     format specified for this MP.  Run it with no parameters to see
     usage.
 
 elfconvert
+
     This program takes a 32-bit ELF (Executable and Linking Format) file
     - the standard executable type on Linux - and converts it to the
     executable format specified for this MP.  The output filename is
     <exename>.converted.
 
 fish/
+	
 	This directory contains the source for the fish animation program.
 	It can be compiled two ways - one for your operating system, and one
 	for Linux using an emulation layer.  The Makefile is currently set
@@ -27,6 +30,7 @@ fish/
 	at a standard Linux console, and you should see the fish animation.
 
 fsdir/
+	
 	This is the directory from which your filesystem image was created.
 	It contains versions of cat, fish, grep, hello, ls, and shell, as
 	well as the frame0.txt and frame1.txt files that fish needs to run.
@@ -35,9 +39,11 @@ fsdir/
 	filesystem image.
 
 README
+    
     This file.
 
 student-distrib/
+    
     This is the directory that contains the source code for your
     operating system.  Currently, a skeleton is provided that will build
     and boot you into protected mode, printing out various boot
@@ -45,6 +51,7 @@ student-distrib/
     instructions on how to set up the bootloader to boot this OS.
 
 syscalls/
+    
     This directory contains a basic system call library that is used by
     the utility programs such as cat, grep, ls, etc.  The library
     provides a C interface to the system calls, much like the C library
